@@ -229,9 +229,9 @@ namespace Wbskt.Client
             return true;
         }
 
-        protected virtual void OnReceivedPayload(ClientPayload clientPayload)
+        private void OnReceivedPayload(ClientPayload clientPayload)
         {
-            ReceivedPayload.Invoke(clientPayload);
+            ReceivedPayload?.Invoke(clientPayload);
         }
     }
 }
