@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Wbskt.Client
 {
-    public static class SocketExtensions
+    internal static class SocketExtensions
     {
         public static async Task WriteAsync(this WebSocket ws, string message)
         {

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Wbskt.Client
 {
-    public static class Helper
+    internal static class Helper
     {
         public static HostString GetSocketServerAddress(this IEnumerable<Claim> claims)
         {

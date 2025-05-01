@@ -1,4 +1,4 @@
-namespace Wbskt.Client
+namespace Wbskt.Client.Contracts
 {
     public class ClientPayload
     {

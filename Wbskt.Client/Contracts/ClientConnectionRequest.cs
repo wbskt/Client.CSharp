@@ -1,9 +1,9 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Wbskt.Client
+namespace Wbskt.Client.Contracts
 {
-    public class ClientConnectionRequest
+    internal class ClientConnectionRequest
     {
         /// <summary>
         /// Used for a client to connect to a channel

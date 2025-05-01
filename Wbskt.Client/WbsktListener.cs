@@ -11,6 +11,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Wbskt.Client.Configurations;
+using Wbskt.Client.Contracts;
 
 namespace Wbskt.Client
 {
