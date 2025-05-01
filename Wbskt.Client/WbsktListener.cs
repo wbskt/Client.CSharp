@@ -59,8 +59,45 @@ namespace Wbskt.Client
         /// <param name="ct">The cancellation token to stop the listening process.</param>
         public void StartListening(CancellationToken ct)
         {
+            _worker = Task.Run(async () => await StartListeningAsync(ct), ct);
+        }
+
+        /// <summary>
+        /// Starts listening for WebSocket events.
+        /// This method runs in a loop until the provided <see cref="CancellationToken"/> is canceled.
+        /// It validates the configuration, establishes a WebSocket connection, and processes incoming messages.
+        /// </summary>
+        /// <param name="ct">The cancellation token to stop the listening process.</param>
+        public async Task StartListeningAsync(CancellationToken ct)
+        {
             ct.Register(_cts.Cancel);
-            _worker = Task.Run(async () => await StartListeningInternal(_cts.Token), _cts.Token);
+            while (!ct.IsCancellationRequested)
+            {
+                // Validate the configuration before starting the WebSocket connection.
+                if (!ConfigurationValidator.IsValid(_wbsktConfiguration, _logger))
+                {
+                    _logger?.LogError("Restart the service after configuring properly.");
+                    await Task.Delay(_wbsktConfiguration.ClientDetails.RetryIntervalInSeconds * 1000, ct);
+                    continue;
+                }
+
+                _logger?.LogInformation("Client running at: {time}", DateTimeOffset.Now);
+
+                try
+                {
+                    // Start listening to WebSocket events.
+                    await WebSocketHandler.ListenAsync(_logger, _wbsktConfiguration, OnReceivedPayload, UpdateStatus, ct).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    // Log unexpected errors during WebSocket communication.
+                    _logger?.LogError(ex, "Unexpected error: {error}", ex.Message);
+                }
+
+                IsConnected = false;
+                // Wait for the retry interval before attempting to reconnect.
+                await Task.Delay(_wbsktConfiguration.ClientDetails.RetryIntervalInSeconds * 1000, ct);
+            }
         }
 
         /// <summary>
@@ -93,43 +130,6 @@ namespace Wbskt.Client
 
             IsConnected = false;
             _cts.Dispose();
-        }
-
-        /// <summary>
-        /// Starts listening for WebSocket events.
-        /// This method runs in a loop until the provided <see cref="CancellationToken"/> is canceled.
-        /// It validates the configuration, establishes a WebSocket connection, and processes incoming messages.
-        /// </summary>
-        /// <param name="ct">The cancellation token to stop the listening process.</param>
-        private async Task StartListeningInternal(CancellationToken ct)
-        {
-            while (!ct.IsCancellationRequested)
-            {
-                // Validate the configuration before starting the WebSocket connection.
-                if (!ConfigurationValidator.IsValid(_wbsktConfiguration, _logger))
-                {
-                    _logger?.LogError("Restart the service after configuring properly.");
-                    await Task.Delay(_wbsktConfiguration.ClientDetails.RetryIntervalInSeconds * 1000, ct);
-                    continue;
-                }
-
-                _logger?.LogInformation("Client running at: {time}", DateTimeOffset.Now);
-
-                try
-                {
-                    // Start listening to WebSocket events.
-                    await WebSocketHandler.ListenAsync(_logger, _wbsktConfiguration, OnReceivedPayload, UpdateStatus, ct).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    // Log unexpected errors during WebSocket communication.
-                    _logger?.LogError(ex, "Unexpected error: {error}", ex.Message);
-                }
-
-                IsConnected = false;
-                // Wait for the retry interval before attempting to reconnect.
-                await Task.Delay(_wbsktConfiguration.ClientDetails.RetryIntervalInSeconds * 1000, ct);
-            }
         }
 
 
