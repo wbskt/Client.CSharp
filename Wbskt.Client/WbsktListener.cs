@@ -16,14 +16,14 @@ namespace Wbskt.Client
 {
     public class WbsktListener
     {
-        private readonly WbsktConfiguration _wbsktConfiguration;
+        private readonly IWbsktConfiguration _wbsktConfiguration;
         private readonly ILogger<WbsktListener> _logger;
 
         public delegate void TriggerActionHandler(ClientPayload clientPayload);
 
         public event TriggerActionHandler ReceivedPayload;
 
-        public WbsktListener(WbsktConfiguration wbsktConfiguration, ILogger<WbsktListener> logger)
+        public WbsktListener(IWbsktConfiguration wbsktConfiguration, ILogger<WbsktListener> logger)
         {
             _wbsktConfiguration = wbsktConfiguration;
             _logger = logger;
@@ -51,11 +51,17 @@ namespace Wbskt.Client
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("unexpected error: {error}", ex.Message);
-                    _logger.LogTrace("unexpected error: {error}", ex.ToString());
+                    _logger.LogError(ex, "unexpected error: {error}", ex.Message);
                 }
 
-                await Task.Delay(_wbsktConfiguration.ClientDetails.RetryIntervalInSeconds * 1000, ct);
+                try
+                {
+                    await Task.Delay(_wbsktConfiguration.ClientDetails.RetryIntervalInSeconds * 1000, ct);
+                }
+                catch (TaskCanceledException tcex)
+                {
+                    _logger.LogError(tcex, "unexpected error: {error}", tcex.Message);
+                }
             }
         }
 
@@ -95,7 +101,7 @@ namespace Wbskt.Client
                     if (receiveResult.MessageType == WebSocketMessageType.Close)
                     {
                         _logger.LogInformation("closing connection ({closeStatus})", receiveResult.CloseStatusDescription);
-                        await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "closing connection (socket server ack)", ct);
+                        await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "closing connection (socket server ack)", CancellationToken.None);
                         break;
                     }
 
@@ -194,7 +200,7 @@ namespace Wbskt.Client
             }
         }
 
-        private bool IsConfigValid(WbsktConfiguration configuration)
+        private bool IsConfigValid(IWbsktConfiguration configuration)
         {
             if (configuration == null)
             {

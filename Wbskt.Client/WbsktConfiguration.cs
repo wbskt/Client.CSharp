@@ -17,7 +17,21 @@ namespace Wbskt.Client
         public int RetryIntervalInSeconds { get; set; } = 10;
     }
 
-    public class WbsktConfiguration
+    public interface IWbsktConfiguration
+    {
+        HostString CoreServerAddress { get; }
+        ClientDetails ClientDetails { get; }
+        ChannelDetails ChannelDetails { get; }
+    }
+
+    public class WbsktConfigurationCustom : IWbsktConfiguration
+    {
+        public HostString CoreServerAddress { get; set; }
+        public ClientDetails ClientDetails { get; set; }
+        public ChannelDetails ChannelDetails { get; set; }
+    }
+
+    internal sealed class WbsktConfiguration : IWbsktConfiguration
     {
         private readonly IOptionsMonitor<Settings> _settingsMonitor;
 

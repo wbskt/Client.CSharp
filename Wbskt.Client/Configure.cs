@@ -8,7 +8,7 @@ namespace Wbskt.Client
         public static void ConfigureWbskt(this IServiceCollection serviceCollection, IConfiguration configuration)
         {
             serviceCollection.Configure<WbsktConfiguration.Settings>(configuration);
-            serviceCollection.AddSingleton<WbsktConfiguration>();
+            serviceCollection.AddSingleton<IWbsktConfiguration, WbsktConfiguration>();
             serviceCollection.AddSingleton<WbsktListener>();
         }
     }
