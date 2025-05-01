@@ -18,6 +18,9 @@ namespace Wbskt.Client
         private readonly IWbsktConfiguration _wbsktConfiguration;
         private readonly ILogger<WbsktListener> _logger;
 
+        private Task _worker;
+        private readonly CancellationTokenSource _cts;
+
         /// <summary>
         /// Delegate for handling received payloads.
         /// </summary>
@@ -31,14 +34,21 @@ namespace Wbskt.Client
         public event TriggerActionHandler ReceivedPayloadEvent;
 
         /// <summary>
+        /// Gets the connection status of the WebSocket client.
+        /// True if the connection is active, otherwise false.
+        /// </summary>
+        public bool IsConnected { get; private set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="WbsktListener"/> class.
         /// </summary>
         /// <param name="wbsktConfiguration">The WebSocket client configuration.</param>
-        /// <param name="logger">The logger instance for logging events and errors.</param>
-        public WbsktListener(IWbsktConfiguration wbsktConfiguration, ILogger<WbsktListener> logger = null)
+        /// <param name="logger">The logger instance for logging events and errors. (may )</param>
+        public WbsktListener(IWbsktConfiguration wbsktConfiguration, ILogger<WbsktListener> logger)
         {
             _wbsktConfiguration = wbsktConfiguration ?? throw new ArgumentNullException(nameof(wbsktConfiguration));
             _logger = logger;
+            _cts = new CancellationTokenSource();
         }
 
         /// <summary>
@@ -47,7 +57,51 @@ namespace Wbskt.Client
         /// It validates the configuration, establishes a WebSocket connection, and processes incoming messages.
         /// </summary>
         /// <param name="ct">The cancellation token to stop the listening process.</param>
-        public async Task StartListening(CancellationToken ct)
+        public void StartListening(CancellationToken ct)
+        {
+            ct.Register(_cts.Cancel);
+            _worker = Task.Run(async () => await StartListeningInternal(_cts.Token), _cts.Token);
+        }
+
+        /// <summary>
+        /// Stops the WebSocket listener gracefully.
+        /// This method cancels the listening process by signaling the associated <see cref="CancellationTokenSource"/>.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous stop operation.</returns>
+        public void StopListening()
+        {
+            StopListeningAsync().Wait();
+        }
+
+        /// <summary>
+        /// Stops the WebSocket listener gracefully.
+        /// This method cancels the listening process by signaling the associated <see cref="CancellationTokenSource"/>.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous stop operation.</returns>
+        public async Task StopListeningAsync()
+        {
+            if (_worker != null && !_worker.GetAwaiter().IsCompleted)
+            {
+#if NETSTANDARD
+                _cts.Cancel();
+#elif NET
+                await _cts.CancelAsync();
+#endif
+
+                await _worker;
+            }
+
+            IsConnected = false;
+            _cts.Dispose();
+        }
+
+        /// <summary>
+        /// Starts listening for WebSocket events.
+        /// This method runs in a loop until the provided <see cref="CancellationToken"/> is canceled.
+        /// It validates the configuration, establishes a WebSocket connection, and processes incoming messages.
+        /// </summary>
+        /// <param name="ct">The cancellation token to stop the listening process.</param>
+        private async Task StartListeningInternal(CancellationToken ct)
         {
             while (!ct.IsCancellationRequested)
             {
@@ -64,7 +118,7 @@ namespace Wbskt.Client
                 try
                 {
                     // Start listening to WebSocket events.
-                    await WebSocketHandler.ListenAsync(_logger, _wbsktConfiguration, OnReceivedPayload, ct);
+                    await WebSocketHandler.ListenAsync(_logger, _wbsktConfiguration, OnReceivedPayload, UpdateStatus, ct).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -72,10 +126,12 @@ namespace Wbskt.Client
                     _logger?.LogError(ex, "Unexpected error: {error}", ex.Message);
                 }
 
+                IsConnected = false;
                 // Wait for the retry interval before attempting to reconnect.
                 await Task.Delay(_wbsktConfiguration.ClientDetails.RetryIntervalInSeconds * 1000, ct);
             }
         }
+
 
         /// <summary>
         /// Invokes the <see cref="ReceivedPayloadEvent"/> event when a payload is received.
@@ -86,6 +142,11 @@ namespace Wbskt.Client
         {
             // Trigger the event to notify subscribers of the received payload.
             ReceivedPayloadEvent?.Invoke(clientPayload);
+        }
+
+        private void UpdateStatus(bool status)
+        {
+            IsConnected = status;
         }
     }
 }
