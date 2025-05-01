@@ -15,7 +15,7 @@ namespace Wbskt.Client.Configurations
         /// Initializes a new instance of the <see cref="WbsktConfiguration"/> class.
         /// </summary>
         /// <param name="settingsMonitor">Monitors configuration settings for changes.</param>
-        internal WbsktConfiguration(IOptionsMonitor<Settings> settingsMonitor)
+        public WbsktConfiguration(IOptionsMonitor<Settings> settingsMonitor)
         {
             _settingsMonitor = settingsMonitor;
         }
