@@ -9,9 +9,9 @@ namespace Wbskt.Client.Configurations
     public class WbsktConfigurationCustom : IWbsktConfiguration
     {
         /// <summary>
-        /// Gets the core server address for the WebSocket client.
+        /// Gets the Wbskt server address for the WebSocket client.
         /// </summary>
-        public HostString CoreServerAddress { get; set; }
+        public HostString WbsktServerAddress { get; set; }
 
         /// <summary>
         /// Gets the client-specific details such as name, unique ID, and retry interval.

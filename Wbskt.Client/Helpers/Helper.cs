@@ -4,7 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 
-namespace Wbskt.Client
+namespace Wbskt.Client.Helpers
 {
     internal static class Helper
     {
@@ -20,7 +20,7 @@ namespace Wbskt.Client
         {
             var claim = claims.FirstOrDefault(c => c.Type == "TokenId");
 
-            return Guid.Parse(claim.Value);
+            return Guid.Parse(claim?.Value ?? Guid.Empty.ToString());
         }
     }
 }

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 namespace Wbskt.Client.Configurations
 {
     /// <summary>
-    /// This class provides configuration settings for the WebSocket client.
+    /// This class provides configuration settings for the Wbskt client.
     /// It uses <see cref="IOptionsMonitor{TOptions}"/> to support hot-reload of configuration values. Please configure <see cref="DependencyInjection"/> to use this.
     /// </summary>
     internal sealed class WbsktConfiguration : IWbsktConfiguration
@@ -21,9 +21,9 @@ namespace Wbskt.Client.Configurations
         }
 
         /// <summary>
-        /// Gets the core server address for the WebSocket client.
+        /// Gets the Wbskt server address for the Wbskt client.
         /// </summary>
-        public HostString CoreServerAddress => new HostString(_settingsMonitor.CurrentValue.CoreServerAddress);
+        public HostString WbsktServerAddress => new HostString(_settingsMonitor.CurrentValue.WbsktServerAddress);
 
         /// <summary>
         /// Gets the client-specific details such as name, unique ID, and retry interval.
@@ -36,14 +36,14 @@ namespace Wbskt.Client.Configurations
         public ChannelDetails ChannelDetails => _settingsMonitor.CurrentValue.ChannelDetails;
 
         /// <summary>
-        /// Represents the configuration settings for the WebSocket client.
+        /// Represents the configuration settings for the Wbskt client.
         /// </summary>
         internal class Settings
         {
             /// <summary>
-            /// The address of the core server.
+            /// The address of the Wbskt server.
             /// </summary>
-            public string CoreServerAddress { get; set; } = string.Empty;
+            public string WbsktServerAddress { get; set; } = string.Empty;
 
             /// <summary>
             /// Details about the client, including name, unique ID, and retry interval.

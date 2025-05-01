@@ -1,7 +1,14 @@
 namespace Wbskt.Client.Contracts
 {
+    /// <summary>
+    /// Represents the payload sent by the user to a Wbskt channel.
+    /// This class encapsulates the data being transmitted to the channel.
+    /// </summary>
     public class ClientPayload
     {
-        public string Data { get; set; } = "default payload";
+        /// <summary>
+        /// Gets the data being sent to the Wbskt channel.
+        /// </summary>
+        public string Data { get; internal set; } = string.Empty;
     }
 }
