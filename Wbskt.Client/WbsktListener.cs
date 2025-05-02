@@ -76,7 +76,7 @@ namespace Wbskt.Client
                 // Validate the configuration before starting the WebSocket connection.
                 if (!ConfigurationValidator.IsValid(_wbsktConfiguration, _logger))
                 {
-                    _logger?.LogError("Restart the service after configuring properly.");
+                    _logger?.LogError("Please configure the listener");
                     await Task.Delay(_wbsktConfiguration.ClientDetails.RetryIntervalInSeconds * 1000, ct);
                     continue;
                 }
