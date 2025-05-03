@@ -9,6 +9,6 @@ namespace Wbskt.Client.Contracts
         /// <summary>
         /// Gets the data being sent to the Wbskt channel.
         /// </summary>
-        public string Data { get; internal set; } = string.Empty;
+        public string Data { get; set; } = string.Empty;
     }
 }
