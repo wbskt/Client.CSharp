@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Http;
-
 namespace Wbskt.Client.Configurations
 {
     /// <summary>
@@ -12,7 +10,7 @@ namespace Wbskt.Client.Configurations
         /// Gets the Wbskt server address for the Wbskt client.
         /// This is the base address of the Wbskt server.
         /// </summary>
-        HostString WbsktServerAddress { get; }
+        string WbsktServerAddress { get; }
 
         /// <summary>
         /// Gets the client-specific details, such as name, unique ID, and retry interval.
