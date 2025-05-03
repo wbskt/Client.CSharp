@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-      <Version>0.0.1</Version>
+      <Version>0.0.2</Version>
       <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
       <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
       <Title>Wbskt.Client</Title>
-      <Authors>Wbskt</Authors>
+      <Authors>Wbskt, Richard Joy</Authors>
       <Description>Wbskt.Client.CSharp project is a .NET-based client library designed for seamless real-time communication with the Wbskt platform.</Description>
       <Copyright>Copyright (c) Wbskt 2025</Copyright>
       <PackageProjectUrl>https://github.com/wbskt/Client.CSharp</PackageProjectUrl>
