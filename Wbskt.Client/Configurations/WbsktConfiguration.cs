@@ -42,7 +42,7 @@ namespace Wbskt.Client.Configurations
             /// <summary>
             /// The address of the Wbskt server.
             /// </summary>
-            public string WbsktServerAddress { get; set; } = string.Empty;
+            public string WbsktServerAddress { get; set; } = "wbskt.com";
 
             /// <summary>
             /// Details about the client, including name, unique ID, and retry interval.

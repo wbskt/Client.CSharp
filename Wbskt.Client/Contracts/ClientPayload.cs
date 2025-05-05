@@ -1,3 +1,5 @@
+using System;
+
 namespace Wbskt.Client.Contracts
 {
     /// <summary>
@@ -10,5 +12,13 @@ namespace Wbskt.Client.Contracts
         /// Gets the data being sent to the Wbskt channel.
         /// </summary>
         public string Data { get; set; } = string.Empty;
+
+        public Guid PublisherId { get; set; }
+
+        public bool EnsureDelivery { get; set; }
+
+        public Guid ChannelSubscriberId { get; set; }
+
+        public Guid PayloadId { get; set; }
     }
 }

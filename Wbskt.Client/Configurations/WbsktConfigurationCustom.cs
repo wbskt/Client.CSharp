@@ -9,7 +9,7 @@ namespace Wbskt.Client.Configurations
         /// <summary>
         /// Gets the Wbskt server address for the WebSocket client.
         /// </summary>
-        public string WbsktServerAddress { get; set; }
+        public string WbsktServerAddress { get; set; } = "wbskt.com";
 
         /// <summary>
         /// Gets the client-specific details such as name, unique ID, and retry interval.
