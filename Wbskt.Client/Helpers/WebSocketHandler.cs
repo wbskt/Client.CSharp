@@ -15,7 +15,7 @@ namespace Wbskt.Client.Helpers
     /// </summary>
     internal static class WebSocketHandler
     {
-        public static async Task ListenAsync(ILogger logger, IWbsktConfiguration configuration, Action<ClientPayload> onReceivedPayload, Action<bool> updateStatus, CancellationToken cancellationToken)
+        public static async Task ListenAsync(ILogger logger, IWbsktConfiguration configuration, Action<UserClientPayload> onReceivedPayload, Action<bool> updateStatus, CancellationToken cancellationToken)
         {
             updateStatus(false);
             var token = await TokenProvider.GetTokenAsync(configuration, logger).ConfigureAwait(false);
@@ -64,7 +64,7 @@ namespace Wbskt.Client.Helpers
             }
         }
 
-        private static void HandleMessage(string message, ILogger logger, Action<ClientPayload> onReceivedPayload)
+        private static void HandleMessage(string message, ILogger logger, Action<UserClientPayload> onReceivedPayload)
         {
             if (string.IsNullOrWhiteSpace(message))
             {
@@ -74,7 +74,7 @@ namespace Wbskt.Client.Helpers
 
             try
             {
-                var payload = JsonSerializer.Deserialize<ClientPayload>(message) ?? throw new JsonException("Serialized payload is null.");
+                var payload = JsonSerializer.Deserialize<UserClientPayload>(message) ?? throw new JsonException("Serialized payload is null.");
                 logger?.LogDebug("Payload received: {payload}", payload.Data);
                 onReceivedPayload(payload);
             }
