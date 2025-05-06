@@ -12,6 +12,8 @@
       <RepositoryUrl>https://github.com/wbskt/Client.CSharp</RepositoryUrl>
       <PackageTags>websockt, socket, event, wbskt, iot, pubsub, trigger</PackageTags>
       <PackageIcon>wbskt.jpg</PackageIcon>
+      <SignAssembly>true</SignAssembly>
+      <AssemblyOriginatorKeyFile>Wbskt.Client.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
 
     <ItemGroup>
