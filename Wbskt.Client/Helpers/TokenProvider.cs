@@ -22,7 +22,7 @@ namespace Wbskt.Client.Helpers
         {
             var httpClient = new HttpClient
             {
-                BaseAddress = new Uri($"http://{configuration.WbsktServerAddress}")
+                BaseAddress = new Uri($"https://{configuration.WbsktServerAddress}")
             };
 
             try
