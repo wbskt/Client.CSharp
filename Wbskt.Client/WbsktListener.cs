@@ -89,7 +89,10 @@ namespace Wbskt.Client
                 if (!ConfigurationValidator.IsValid(_wbsktConfiguration, _logger))
                 {
                     _logger?.LogError("Please configure the listener");
-                    await Task.Delay(_wbsktConfiguration.ClientDetails.RetryIntervalInSeconds * 1000, _cts.Token);
+                    if (!_cts.Token.IsCancellationRequested)
+                    {
+                        await Task.Delay(_wbsktConfiguration.ClientDetails.RetryIntervalInSeconds * 1000, _cts.Token);
+                    }
                     continue;
                 }
 
@@ -108,7 +111,10 @@ namespace Wbskt.Client
 
                 UpdateStatus(false);
                 // Wait for the retry interval before attempting to reconnect.
-                await Task.Delay(_wbsktConfiguration.ClientDetails.RetryIntervalInSeconds * 1000, _cts.Token);
+                if (!_cts.Token.IsCancellationRequested)
+                {
+                    await Task.Delay(_wbsktConfiguration.ClientDetails.RetryIntervalInSeconds * 1000, _cts.Token);
+                }
             }
         }
 

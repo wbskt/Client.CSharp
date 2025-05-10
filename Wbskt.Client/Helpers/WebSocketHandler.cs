@@ -18,7 +18,7 @@ namespace Wbskt.Client.Helpers
         public static async Task ListenAsync(ILogger logger, IWbsktConfiguration configuration, Action<UserClientPayload> onReceivedPayload, Action<bool> updateStatus, CancellationToken cancellationToken)
         {
             updateStatus(false);
-            var token = await TokenProvider.GetTokenAsync(configuration, logger).ConfigureAwait(false);
+            var token = await TokenProvider.GetTokenAsync(configuration, logger);
             if (string.IsNullOrWhiteSpace(token)) return;
 
             var jwt = new JsonWebTokenHandler().ReadJsonWebToken(token);
@@ -36,20 +36,21 @@ namespace Wbskt.Client.Helpers
 
                 var wsUri = new Uri($"ws://{socketServerAddress}/ws");
                 logger?.LogInformation("Trying to connect: {wsUri}", wsUri);
-                await ws.ConnectAsync(wsUri, cancellationToken).ConfigureAwait(false);
+                await ws.ConnectAsync(wsUri, CancellationToken.None);
                 updateStatus(true);
                 logger?.LogInformation("Connection established to: {wsUri}", wsUri);
 
-                await ws.WriteAsync(configuration.ClientDetails.Name, cancellationToken).ConfigureAwait(false);
+                await ws.WriteAsync(configuration.ClientDetails.Name, CancellationToken.None);
 
+                cancellationToken.Register(() => CloseClientConnection(logger, ws, updateStatus));
                 while (!cancellationToken.IsCancellationRequested && ws.State == WebSocketState.Open)
                 {
-                    var (receiveResult, message) = await ws.ReadAsync(cancellationToken).ConfigureAwait(false);
+                    var (receiveResult, message) = await ws.ReadAsync(CancellationToken.None);
 
-                    if (receiveResult.MessageType == WebSocketMessageType.Close)
+                    if (receiveResult.MessageType == WebSocketMessageType.Close && (ws.State == WebSocketState.Open || ws.State == WebSocketState.CloseReceived || ws.State == WebSocketState.CloseSent))
                     {
                         logger?.LogInformation("Closing connection ({closeStatus})", receiveResult.CloseStatusDescription);
-                        await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing connection (socket server ack)", CancellationToken.None).ConfigureAwait(false);
+                        await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing connection (socket server ack)", CancellationToken.None);
                         updateStatus(false);
                         break;
                     }
@@ -62,6 +63,13 @@ namespace Wbskt.Client.Helpers
                 updateStatus(false);
                 logger?.LogError(ex, "Unexpected error during WebSocket communication: {error}", ex.Message);
             }
+        }
+
+        private static void CloseClientConnection(ILogger logger, ClientWebSocket ws, Action<bool> updateStatus)
+        {
+            logger?.LogInformation("Closing connection ({closeStatus})", "Closing connection (client initiated)");
+            ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing connection (client initiated)", CancellationToken.None);
+            updateStatus(false);
         }
 
         private static void HandleMessage(string message, ILogger logger, Action<UserClientPayload> onReceivedPayload)
