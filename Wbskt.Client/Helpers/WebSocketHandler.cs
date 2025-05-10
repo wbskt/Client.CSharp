@@ -19,7 +19,10 @@ namespace Wbskt.Client.Helpers
         {
             updateStatus(false);
             var token = await TokenProvider.GetTokenAsync(configuration, logger);
-            if (string.IsNullOrWhiteSpace(token)) return;
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return;
+            }
 
             var jwt = new JsonWebTokenHandler().ReadJsonWebToken(token);
             var socketServerAddress = jwt.Claims.GetSocketServerAddress();
@@ -31,6 +34,7 @@ namespace Wbskt.Client.Helpers
             {
                 ws.Options.SetRequestHeader("Authorization", $"Bearer {token}");
 #if NET
+                // todo: remove this once https is configured in the socket server
                 ws.Options.RemoteCertificateValidationCallback = (_, _, _, _) => true;
 #endif
 
@@ -67,9 +71,12 @@ namespace Wbskt.Client.Helpers
 
         private static void CloseClientConnection(ILogger logger, ClientWebSocket ws, Action<bool> updateStatus)
         {
-            logger?.LogInformation("Closing connection ({closeStatus})", "Closing connection (client initiated)");
-            ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing connection (client initiated)", CancellationToken.None);
-            updateStatus(false);
+            if (ws.State == WebSocketState.Open || ws.State == WebSocketState.CloseReceived || ws.State == WebSocketState.CloseSent)
+            {
+                logger?.LogInformation("Closing connection ({closeStatus})", "Closing connection (client initiated)");
+                ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing connection (client initiated)", CancellationToken.None);
+                updateStatus(false);
+            }
         }
 
         private static void HandleMessage(string message, ILogger logger, Action<UserClientPayload> onReceivedPayload)

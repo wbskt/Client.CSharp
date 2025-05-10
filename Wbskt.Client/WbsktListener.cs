@@ -71,7 +71,7 @@ namespace Wbskt.Client
         /// <param name="ct">The cancellation token to stop the listening process.</param>
         public void StartListening(CancellationToken ct)
         {
-            _worker = Task.Run(async () => await StartListeningAsync(ct), ct);
+            _worker = StartListeningAsync(ct);
         }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace Wbskt.Client
                 try
                 {
                     // Start listening to WebSocket events.
-                    await WebSocketHandler.ListenAsync(_logger, _wbsktConfiguration, OnReceivedPayload, UpdateStatus, _cts.Token).ConfigureAwait(false);
+                    await WebSocketHandler.ListenAsync(_logger, _wbsktConfiguration, OnReceivedPayload, UpdateStatus, _cts.Token);
                 }
                 catch (Exception ex)
                 {
