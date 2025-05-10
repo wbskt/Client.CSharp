@@ -34,6 +34,18 @@ namespace Wbskt.Client
         public event TriggerActionHandler ReceivedPayloadEvent;
 
         /// <summary>
+        /// Event triggered when the WebSocket client successfully establishes a connection.
+        /// Subscribers can attach their handlers to perform actions upon connection.
+        /// </summary>
+        public event Action OnConnected;
+
+        /// <summary>
+        /// Event triggered when the WebSocket client disconnects from the server.
+        /// Subscribers can attach their handlers to perform actions upon disconnection.
+        /// </summary>
+        public event Action OnDisconnected;
+
+        /// <summary>
         /// Gets the connection status of the WebSocket client.
         /// True if the connection is active, otherwise false.
         /// </summary>
@@ -71,13 +83,13 @@ namespace Wbskt.Client
         public async Task StartListeningAsync(CancellationToken ct)
         {
             ct.Register(_cts.Cancel);
-            while (!ct.IsCancellationRequested)
+            while (!_cts.Token.IsCancellationRequested)
             {
                 // Validate the configuration before starting the WebSocket connection.
                 if (!ConfigurationValidator.IsValid(_wbsktConfiguration, _logger))
                 {
                     _logger?.LogError("Please configure the listener");
-                    await Task.Delay(_wbsktConfiguration.ClientDetails.RetryIntervalInSeconds * 1000, ct);
+                    await Task.Delay(_wbsktConfiguration.ClientDetails.RetryIntervalInSeconds * 1000, _cts.Token);
                     continue;
                 }
 
@@ -86,7 +98,7 @@ namespace Wbskt.Client
                 try
                 {
                     // Start listening to WebSocket events.
-                    await WebSocketHandler.ListenAsync(_logger, _wbsktConfiguration, OnReceivedPayload, UpdateStatus, ct).ConfigureAwait(false);
+                    await WebSocketHandler.ListenAsync(_logger, _wbsktConfiguration, OnReceivedPayload, UpdateStatus, _cts.Token).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -94,9 +106,9 @@ namespace Wbskt.Client
                     _logger?.LogError(ex, "Unexpected error: {error}", ex.Message);
                 }
 
-                IsConnected = false;
+                UpdateStatus(false);
                 // Wait for the retry interval before attempting to reconnect.
-                await Task.Delay(_wbsktConfiguration.ClientDetails.RetryIntervalInSeconds * 1000, ct);
+                await Task.Delay(_wbsktConfiguration.ClientDetails.RetryIntervalInSeconds * 1000, _cts.Token);
             }
         }
 
@@ -144,8 +156,24 @@ namespace Wbskt.Client
             ReceivedPayloadEvent?.Invoke(clientPayload);
         }
 
+        /// <summary>
+        /// Updates the connection status of the WebSocket client.
+        /// Invokes the <see cref="OnConnected"/> event when the client connects
+        /// and the <see cref="OnDisconnected"/> event when the client disconnects.
+        /// </summary>
+        /// <param name="status">The new connection status. True if connected, false if disconnected.</param>
         private void UpdateStatus(bool status)
         {
+            if (status)
+            {
+                OnConnected?.Invoke();
+            }
+
+            if (IsConnected && status == false)
+            {
+                OnDisconnected?.Invoke();
+            }
+
             IsConnected = status;
         }
     }
