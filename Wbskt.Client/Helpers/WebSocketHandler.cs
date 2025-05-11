@@ -46,7 +46,7 @@ namespace Wbskt.Client.Helpers
 
                 await ws.WriteAsync(configuration.ClientDetails.Name, CancellationToken.None);
 
-                cancellationToken.Register(() => CloseClientConnection(logger, ws, updateStatus));
+                cancellationToken.Register(() => CloseClientConnection(logger, ws, updateStatus).Wait(CancellationToken.None));
                 while (!cancellationToken.IsCancellationRequested && ws.State == WebSocketState.Open)
                 {
                     var (receiveResult, message) = await ws.ReadAsync(CancellationToken.None);
@@ -69,12 +69,12 @@ namespace Wbskt.Client.Helpers
             }
         }
 
-        private static void CloseClientConnection(ILogger logger, ClientWebSocket ws, Action<bool> updateStatus)
+        private static async Task CloseClientConnection(ILogger logger, ClientWebSocket ws, Action<bool> updateStatus)
         {
             if (ws.State == WebSocketState.Open || ws.State == WebSocketState.CloseReceived || ws.State == WebSocketState.CloseSent)
             {
                 logger?.LogInformation("Closing connection ({closeStatus})", "Closing connection (client initiated)");
-                ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing connection (client initiated)", CancellationToken.None);
+                await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing connection (client initiated)", CancellationToken.None);
                 updateStatus(false);
             }
         }
