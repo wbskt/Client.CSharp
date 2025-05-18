@@ -6,9 +6,9 @@ namespace Wbskt.Client.Contracts
     internal class ClientConnectionRequest
     {
         /// <summary>
-        /// Used for a client to connect to a channel
+        /// Details of all the channels the client is subscribed to
         /// </summary>
-        public Guid ChannelSubscriberId { get; set; }
+        public ClientChannel[] Channels { get; set; } = new ClientChannel[] { };
 
         /// <summary>
         /// Human-readable name for the client
@@ -21,11 +21,18 @@ namespace Wbskt.Client.Contracts
         /// </summary>
         [Required]
         public Guid ClientUniqueId { get; set;}
+    }
+
+    public class ClientChannel
+    {
+        /// <summary>
+        /// Used for a client to connect to a channel
+        /// </summary>
+        public Guid ChannelSubscriberId { get; set; }
 
         /// <summary>
         /// This is a secret string provided by the user while creation of a channel
         /// </summary>
-        [Required]
         public string ChannelSecret { get; set; }
     }
 }

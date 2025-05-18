@@ -25,14 +25,18 @@ namespace Wbskt.Client.Helpers
                 BaseAddress = new Uri($"https://{configuration.WbsktServerAddress}")
             };
 
+            var channel1 = new ClientChannel()
+            {
+                ChannelSecret = configuration.ChannelDetails.Secret,
+                ChannelSubscriberId = configuration.ChannelDetails.SubscriberId
+            };
             try
             {
                 var clientConnReq = new ClientConnectionRequest
                 {
-                    ChannelSecret = configuration.ChannelDetails.Secret,
+                    Channels = new [] { channel1 },
                     ClientName = configuration.ClientDetails.Name,
                     ClientUniqueId = configuration.ClientDetails.UniqueId,
-                    ChannelSubscriberId = configuration.ChannelDetails.SubscriberId
                 };
 
 #if NETSTANDARD
